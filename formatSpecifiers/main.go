@@ -2,7 +2,7 @@ package main
 
 import "fmt"
 
-func main() {
+func main() {`
 	i := 42
 
 	fmt.Printf("Decimal: %d\n", i)
