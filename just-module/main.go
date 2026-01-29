@@ -9,10 +9,13 @@ import (
 func main() {
 	s1 := puppy.Bark()
 	s2 := puppy.Barks()
-	s3 := puppy.ManBark
+	s3 := puppy.ManBark()
+	s4 := puppy.ManBarks()
 
 	fmt.Println(s1)
 	fmt.Println(s2)
 
 	fmt.Printf("%v\n%v\n", s1, s2)
+	fmt.Printf("%v\n", s3)
+	fmt.Printf("%v\n", s4)
 }

@@ -1,4 +1,6 @@
-github.com/certainlyMohneeesh/golang-lets-fuckin-go/puppy v0.0.0-20260129103351-aa1c79cdb898 h1:pGknYpi7Xv2G+Sk3umPSefTDxDN8OMkdnuCNDc9IeCw=
-github.com/certainlyMohneeesh/golang-lets-fuckin-go/puppy v0.0.0-20260129103351-aa1c79cdb898/go.mod h1:eEQgrCzxTMv087r8EqNG78/gjp9tbk85KPI8/pUcTvk=
+github.com/certainlyMohneeesh/golang-lets-fuckin-go/dog v0.0.0-20260129105834-f99f60fe039a h1:+JyjrspCVlrL8G+WBdW0HakRnY/KWY0yfvxtjNAwzf0=
+github.com/certainlyMohneeesh/golang-lets-fuckin-go/dog v0.0.0-20260129105834-f99f60fe039a/go.mod h1:F+sSGi1y6weEhn0O+Ouqdqf/BEzAPxQyk2HPn9hjDNA=
 github.com/certainlyMohneeesh/golang-lets-fuckin-go/puppy v0.0.0-20260129105834-f99f60fe039a h1:DVYUCPVkrSe0MG58ezzNLgcyA0ppNLQJK6mCg+TIWrY=
 github.com/certainlyMohneeesh/golang-lets-fuckin-go/puppy v0.0.0-20260129105834-f99f60fe039a/go.mod h1:eEQgrCzxTMv087r8EqNG78/gjp9tbk85KPI8/pUcTvk=
+github.com/certainlyMohneeesh/golang-lets-fuckin-go/puppy v0.0.0-20260129111601-b3e857a300df h1:KqMmczOPNeI53dKn4m1poFfqGMYEqiVj8XhEeiW42E0=
+github.com/certainlyMohneeesh/golang-lets-fuckin-go/puppy v0.0.0-20260129111601-b3e857a300df/go.mod h1:rYeB6r8CYc9I4yUUQMvj/9Y4aKX9g657mgBXusDBVmg=
