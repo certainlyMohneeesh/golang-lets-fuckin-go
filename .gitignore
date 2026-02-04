@@ -1,0 +1,19 @@
+# Executables
+*.exe
+*.o
+*.so
+*.dylib
+a.out
+
+# Go compiled binaries (no extension)
+**/main
+addfunc
+bitwise-ops
+bytesize
+userinput
+valuestypes
+just-module
+rolldice
+
+# Temp directories
+**/tmp/
