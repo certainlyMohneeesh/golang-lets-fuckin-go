@@ -13,11 +13,11 @@ func main() {
 
 	fmt.Print("-------------------Welcome to the Profit Calculator---------------------\n")
 
-	fmt.Print("Enter Your Revenue: ")
+	fmt.Print("Enter Revenue: ")
 	fmt.Scan(&revenue)
-	fmt.Print("Enter your expenses: ")
+	fmt.Print("Enter Expenses: ")
 	fmt.Scan(&expenses)
-	fmt.Print("Enter the tax rate: ")
+	fmt.Print("Enter the Tax Rate: ")
 	fmt.Scan(&taxRate)
 
 	taxRate = taxRate / 100
@@ -34,6 +34,10 @@ func main() {
 	ebt := revenue - expenses
 	profit := ebt * (1 - taxRate)
 
-	fmt.Printf("Your Earning before tax is: %.2f\n", ebt)
-	fmt.Printf("Your total Profit is: %.2f\n", profit)
+	fmt.Printf("Earnings Before Tax (EBT): %.2f\n", ebt)
+	fmt.Printf("Net Profit: %.2f\n", profit)
+	fmt.Printf("Tax Burden Ratio: %.2f\n", ebt/profit)
+	fmt.Printf("Tax Retention Rate: %.2f\n", profit/ebt)
+	fmt.Printf("Pretax Margin: %.2f\n", ebt/revenue)
+	fmt.Printf("Net Profit Margin: %.2f\n", profit/revenue)
 }
