@@ -11,25 +11,25 @@ func main() {
 	var expenses float64
 	var taxRate float64
 
-	fmt.Print("-------------------Welcome to the Profit Calculator---------------------\n")
+	outputText("-------------------Welcome to the Profit Calculator---------------------\n")
 
-	fmt.Print("Enter Revenue: ")
+	outputText("Enter Revenue: ")
 	fmt.Scan(&revenue)
-	fmt.Print("Enter Expenses: ")
+	outputText("Enter Expenses: ")
 	fmt.Scan(&expenses)
-	fmt.Print("Enter the Tax Rate: ")
+	outputText("Enter the Tax Rate: ")
 	fmt.Scan(&taxRate)
 
 	taxRate = taxRate / 100
 
 	// just my fancy loading text
-	fmt.Print("Calculating profit")
+	outputText("Calculating profit")
 	for i := 0; i < 3; i++ {
 		time.Sleep(500 * time.Millisecond)
-		fmt.Print(".")
+		outputText(".")
 	}
 	//this clears the calculating loading text
-	fmt.Print("\r" + strings.Repeat(" ", len("Calculating profit...")) + "\r")
+	outputText("\r" + strings.Repeat(" ", len("Calculating profit...")) + "\r")
 
 	ebt := revenue - expenses
 	profit := ebt * (1 - taxRate)
@@ -40,4 +40,8 @@ func main() {
 	fmt.Printf("Tax Retention Rate: %.2f\n", profit/ebt)
 	fmt.Printf("Pretax Margin: %.2f\n", ebt/revenue)
 	fmt.Printf("Net Profit Margin: %.2f\n", profit/revenue)
+}
+
+func outputText(text string) {
+	fmt.Print(text)
 }
