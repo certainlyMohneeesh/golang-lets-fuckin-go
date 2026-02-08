@@ -13,4 +13,4 @@
 ### Members
 - Manish — "paandu baawarchiiiiii"
 - Rohit — "terko pata hai kya"
-- Prajyot — "Are yaar"
+- Prajyot — "Ar e yaar"

@@ -6,20 +6,19 @@ import (
 	"time"
 )
 
+// var revenue float64
+// var expenses float64
+// var taxRate float64
+
 func main() {
-	var revenue float64
-	var expenses float64
-	var taxRate float64
 
-	outputText("-------------------Welcome to the Profit Calculator---------------------\n")
+	outputText("╔══════════════════════════════════════════════════════════════════════════════╗\n")
+	outputText("║                          Welcome to the Profit Calculator                          ║\n")
+	outputText("╚══════════════════════════════════════════════════════════════════════════════╝\n")
 
-	outputText("Enter Revenue: ")
-	fmt.Scan(&revenue)
-	outputText("Enter Expenses: ")
-	fmt.Scan(&expenses)
-	outputText("Enter the Tax Rate: ")
-	fmt.Scan(&taxRate)
-
+	revenue := getUserInput("Enter Revenue: ")
+	expenses := getUserInput("Enter Expenses: ")
+	taxRate := getUserInput("Enter taxRate: ")
 	taxRate = taxRate / 100
 
 	// just my fancy loading text
@@ -31,8 +30,12 @@ func main() {
 	//this clears the calculating loading text
 	outputText("\r" + strings.Repeat(" ", len("Calculating profit...")) + "\r")
 
-	ebt := revenue - expenses
-	profit := ebt * (1 - taxRate)
+	// ebt := revenue - expenses
+	// ebt := calculateFinancials(revenue - expenses)
+	// profit := ebt * (1 - taxRate)
+	// profit := calculateFinancials(ebt * (1 - taxRate))
+
+	ebt, profit := calculateFinancials(revenue, expenses, taxRate)
 
 	fmt.Printf("Earnings Before Tax (EBT): %.2f\n", ebt)
 	fmt.Printf("Net Profit: %.2f\n", profit)
@@ -44,4 +47,17 @@ func main() {
 
 func outputText(text string) {
 	fmt.Print(text)
+}
+
+func calculateFinancials(revenue, expenses, taxRate float64) (float64, float64) {
+	ebt := revenue - expenses
+	profit := ebt * (1 - taxRate)
+	return ebt, profit
+}
+
+func getUserInput(infoText string) float64 {
+	var userInput float64
+	outputText(infoText)
+	fmt.Scan(&userInput)
+	return userInput
 }
