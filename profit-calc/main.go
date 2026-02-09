@@ -13,7 +13,7 @@ import (
 func main() {
 
 	outputText("╔══════════════════════════════════════════════════════════════════════════════╗\n")
-	outputText("║                          Welcome to the Profit Calculator                          ║\n")
+	outputText("║                          Welcome to the Profit Calculator                    ║\n")
 	outputText("╚══════════════════════════════════════════════════════════════════════════════╝\n")
 
 	revenue := getUserInput("Enter Revenue: ")
