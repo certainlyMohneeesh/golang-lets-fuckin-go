@@ -2,9 +2,12 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"strings"
 	"time"
 )
+
+// const detailsCalc = "constants.txt"
 
 //Goals
 // 1) Validate user input
@@ -16,6 +19,12 @@ import (
 // var revenue float64
 // var expenses float64
 // var taxRate float64
+
+func storeResults(ebt, profit, revenue float64) {
+	results := fmt.Sprintf("Earnings Before Tax (EBT): %.2f\nNet Profit: %.2f\nTax Burden Ratio: %.2f\nTax Retention Rate: %.2f\nPretax Margin: %.2f\nNet Profit Margin: %.2f\n", ebt, profit, ebt/profit, profit/ebt, ebt/revenue, profit/revenue)
+	os.WriteFile("results.txt", []byte(results), 0644)
+}
+
 func outputText(text string) {
 	fmt.Print(text)
 }
@@ -26,7 +35,7 @@ func calculateFinancials(revenue, expenses, taxRate float64) (float64, float64) 
 	return ebt, profit
 }
 
-func getUserInput(infoText string) float64 {
+func getUserInput(infoText string) (float64, error) {
 	var userInput float64
 	outputText(infoText)
 	fmt.Scan(&userInput)
@@ -36,7 +45,7 @@ func getUserInput(infoText string) float64 {
 		return getUserInput(infoText)
 	}
 
-	return userInput
+	return userInput, nil
 }
 
 func main() {
@@ -55,9 +64,24 @@ func main() {
 
 		switch choice {
 		case 1:
-			revenue := getUserInput("Enter Revenue: ")
-			expenses := getUserInput("Enter Expenses: ")
-			taxRate := getUserInput("Enter taxRate: ")
+			revenue, err := getUserInput("Enter Revenue: ")
+
+			if err != nil {
+				fmt.Println(err)
+			}
+
+			expenses, err := getUserInput("Enter Expenses: ")
+
+			if err != nil {
+				fmt.Println(err)
+			}
+
+			taxRate, err := getUserInput("Enter taxRate: ")
+
+			if err != nil {
+				fmt.Println(err)
+			}
+
 			taxRate = taxRate / 100
 
 			// just my fancy loading text
@@ -82,6 +106,7 @@ func main() {
 			fmt.Printf("Tax Retention Rate: %.2f\n", profit/ebt)
 			fmt.Printf("Pretax Margin: %.2f\n", ebt/revenue)
 			fmt.Printf("Net Profit Margin: %.2f\n", profit/revenue)
+			storeResults(ebt, profit, revenue)
 
 		default:
 			fmt.Println("Goodbye!\nWill see you again later.")

@@ -1,0 +1,24 @@
+[
+  {
+    "timestamp": "2026-02-12T10:23:22.823897143+05:30",
+    "revenue": 14000,
+    "expenses": 11000,
+    "tax_rate": 18,
+    "ebt": 3000,
+    "profit": 2460,
+    "tax_retention_rate": 0.82,
+    "pretax_margin": 0.21428571428571427,
+    "net_profit_margin": 0.1757142857142857
+  },
+  {
+    "timestamp": "2026-02-12T10:30:27.453212606+05:30",
+    "revenue": 23000,
+    "expenses": 13000,
+    "tax_rate": 15,
+    "ebt": 10000,
+    "profit": 8500,
+    "tax_retention_rate": 0.85,
+    "pretax_margin": 0.43478260869565216,
+    "net_profit_margin": 0.3695652173913043
+  }
+]

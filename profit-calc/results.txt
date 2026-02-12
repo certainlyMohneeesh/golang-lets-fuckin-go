@@ -1,0 +1,6 @@
+Earnings Before Tax (EBT): 3500.00
+Net Profit: 3010.00
+Tax Burden Ratio: 1.16
+Tax Retention Rate: 0.86
+Pretax Margin: 0.90
+Net Profit Margin: 0.77
