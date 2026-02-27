@@ -3,8 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-
-	// "math"
 	"os"
 	"strconv"
 	"strings"
@@ -21,6 +19,7 @@ import (
 const (
 	historyFile = "financial_data.json"
 	colorAccent = "#04B575" // Green for profit
+	colorError  = "#FF5555" // Red for loss
 	colorText   = "#FAFAFA" // White
 	colorSub    = "#7D7D7D" // Grey
 )
@@ -40,11 +39,15 @@ var (
 // --- Data Models ---
 
 type FinancialReport struct {
-	Timestamp       time.Time `json:"timestamp"`
-	Revenue         float64   `json:"revenue"`
-	Expenses        float64   `json:"expenses"`
-	Profit          float64   `json:"profit"`
-	NetProfitMargin float64   `json:"net_profit_margin"`
+	Timestamp        time.Time `json:"timestamp"`
+	Revenue          float64   `json:"revenue"`
+	Expenses         float64   `json:"expenses"`
+	TaxRate          float64   `json:"tax_rate"`
+	EBT              float64   `json:"ebt"`
+	Profit           float64   `json:"profit"`
+	TaxRetentionRate float64   `json:"tax_retention_rate"`
+	PretaxMargin     float64   `json:"pretax_margin"`
+	NetProfitMargin  float64   `json:"net_profit_margin"`
 }
 
 type Profile struct {
@@ -65,6 +68,7 @@ type state int
 const (
 	stateMenu state = iota
 	stateNewCalc
+	stateResult // <--- NEW STATE FOR THE REPORT
 	stateHistory
 	stateProfileSelect
 	stateNewProfile
@@ -78,6 +82,7 @@ type model struct {
 	cursor          int // Main menu cursor
 	table           table.Model
 	newProfileInput textinput.Model
+	lastReport      FinancialReport // <--- Holds the report to display
 	width, height   int
 }
 
@@ -103,7 +108,6 @@ func initialModel() model {
 	// Load Data
 	data := loadData()
 	if len(data.Profiles) == 0 {
-		// Default profile if none exists
 		data.Profiles = append(data.Profiles, Profile{Name: "Default", Currency: "$", History: []FinancialReport{}})
 	}
 
@@ -152,6 +156,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				case 0: // New Calc
 					m.state = stateNewCalc
 					m.focusIndex = 0
+					// Reset inputs whenever we enter this state
+					for i := range m.inputs {
+						m.inputs[i].Reset()
+					}
 					m.inputs[0].Focus()
 					return m, textinput.Blink
 				case 1: // History
@@ -159,7 +167,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.table = createTable(m.getCurrentProfile())
 				case 2: // Switch Profile
 					m.state = stateProfileSelect
-					m.cursor = 0 // Reset cursor for sub-menu
+					m.cursor = 0
 				case 3: // Toggle Currency
 					curr := m.getCurrentProfile().Currency
 					if curr == "$" {
@@ -182,36 +190,45 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case "tab", "shift+tab", "enter", "up", "down":
 				s := msg.String()
 
+				// If Enter is pressed on the last input (Tax Rate)
 				if s == "enter" && m.focusIndex == len(m.inputs)-1 {
-					// Calculate & Save
+					// --- Perform Calculation ---
 					rev, _ := strconv.ParseFloat(m.inputs[0].Value(), 64)
 					exp, _ := strconv.ParseFloat(m.inputs[1].Value(), 64)
 					tax, _ := strconv.ParseFloat(m.inputs[2].Value(), 64)
 
 					ebt := rev - exp
 					profit := ebt * (1 - (tax / 100))
-					margin := 0.0
-					if rev > 0 {
-						margin = profit / rev
+
+					// Calculate Ratios (safe division)
+					var taxRetention, pretaxMargin, netMargin float64
+					if ebt != 0 {
+						taxRetention = profit / ebt
+					}
+					if rev != 0 {
+						pretaxMargin = ebt / rev
+						netMargin = profit / rev
 					}
 
 					report := FinancialReport{
-						Timestamp:       time.Now(),
-						Revenue:         rev,
-						Expenses:        exp,
-						Profit:          profit,
-						NetProfitMargin: margin,
+						Timestamp:        time.Now(),
+						Revenue:          rev,
+						Expenses:         exp,
+						TaxRate:          tax,
+						EBT:              ebt,
+						Profit:           profit,
+						TaxRetentionRate: taxRetention,
+						PretaxMargin:     pretaxMargin,
+						NetProfitMargin:  netMargin,
 					}
 
-					// Append to current profile
+					// Save to history
 					m.data.Profiles[m.data.CurrentProfile].History = append(m.data.Profiles[m.data.CurrentProfile].History, report)
 					saveData(m.data)
 
-					// Reset inputs
-					for i := range m.inputs {
-						m.inputs[i].Reset()
-					}
-					m.state = stateMenu
+					// Set the Last Report and Switch to Result View
+					m.lastReport = report
+					m.state = stateResult
 					return m, nil
 				}
 
@@ -238,11 +255,17 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 				return m, tea.Batch(cmds...)
 			}
-			// Handle typing
 			cmd = m.updateInputs(msg)
 			return m, cmd
 
-		// 3. HISTORY VIEW
+		// 3. RESULT VIEW (The New Screen)
+		case stateResult:
+			if msg.String() == "enter" || msg.String() == "esc" || msg.String() == "q" {
+				m.state = stateMenu
+				return m, nil
+			}
+
+		// 4. HISTORY VIEW
 		case stateHistory:
 			if msg.String() == "esc" || msg.String() == "q" {
 				m.state = stateMenu
@@ -251,7 +274,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.table, cmd = m.table.Update(msg)
 			return m, cmd
 
-		// 4. PROFILE SELECT
+		// 5. PROFILE SELECT
 		case stateProfileSelect:
 			switch msg.String() {
 			case "esc":
@@ -262,23 +285,21 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.cursor--
 				}
 			case "down", "j":
-				if m.cursor < len(m.data.Profiles) { // +1 for "Create New"
+				if m.cursor < len(m.data.Profiles) {
 					m.cursor++
 				}
 			case "enter":
 				if m.cursor == len(m.data.Profiles) {
-					// Create New Profile
 					m.state = stateNewProfile
 					m.newProfileInput.Focus()
 					return m, textinput.Blink
 				}
-				// Select Profile
 				m.data.CurrentProfile = m.cursor
 				saveData(m.data)
 				m.state = stateMenu
 			}
 
-		// 5. NEW PROFILE
+		// 6. NEW PROFILE
 		case stateNewProfile:
 			switch msg.String() {
 			case "esc":
@@ -289,7 +310,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if name != "" {
 					newProfile := Profile{
 						Name:     name,
-						Currency: "$", // Default
+						Currency: "$",
 						History:  []FinancialReport{},
 					}
 					m.data.Profiles = append(m.data.Profiles, newProfile)
@@ -325,7 +346,7 @@ func (m model) View() string {
 	s.WriteString(titleStyle.Render("PROFIT CALCULATOR PRO"))
 	s.WriteString("\n\n")
 
-	// Current Context
+	// Current Context (Profile Info)
 	profile := m.getCurrentProfile()
 	s.WriteString(fmt.Sprintf("Profile: %s | Currency: %s\n", profile.Name, profile.Currency))
 	s.WriteString(lipgloss.NewStyle().Foreground(lipgloss.Color(colorSub)).Render(strings.Repeat("-", 40)) + "\n\n")
@@ -348,7 +369,6 @@ func (m model) View() string {
 			s.WriteString(fmt.Sprintf("%s%s\n", cursor, choice))
 		}
 
-		// Forecasting Widget
 		s.WriteString("\n" + getForecasting(profile) + "\n")
 
 	case stateNewCalc:
@@ -360,6 +380,29 @@ func (m model) View() string {
 			}
 		}
 		s.WriteString("\n\n(Press Enter to Submit, Esc to Cancel)\n")
+
+	case stateResult:
+		// --- The Result Card View ---
+		r := m.lastReport
+		curr := profile.Currency
+
+		// Color logic: Green for profit, Red for loss
+		valColor := lipgloss.Color(colorAccent)
+		if r.Profit < 0 {
+			valColor = lipgloss.Color(colorError)
+		}
+		valStyle := lipgloss.NewStyle().Foreground(valColor).Bold(true)
+		lblStyle := lipgloss.NewStyle().Foreground(lipgloss.Color(colorText)).Width(24)
+
+		s.WriteString(lipgloss.NewStyle().Bold(true).Underline(true).Render("--- Financial Report ---") + "\n\n")
+
+		s.WriteString(fmt.Sprintf("%s %s\n", lblStyle.Render("Earnings Before Tax (EBT):"), valStyle.Render(fmt.Sprintf("%s%.2f", curr, r.EBT))))
+		s.WriteString(fmt.Sprintf("%s %s\n", lblStyle.Render("Net Profit:"), valStyle.Render(fmt.Sprintf("%s%.2f", curr, r.Profit))))
+		s.WriteString(fmt.Sprintf("%s %.2f\n", lblStyle.Render("Tax Retention Rate:"), r.TaxRetentionRate))
+		s.WriteString(fmt.Sprintf("%s %.2f%%\n", lblStyle.Render("Pretax Margin:"), r.PretaxMargin*100))
+		s.WriteString(fmt.Sprintf("%s %.2f%%\n", lblStyle.Render("Net Profit Margin:"), r.NetProfitMargin*100))
+
+		s.WriteString("\n\n(Press Enter or Esc to return to Menu)\n")
 
 	case stateHistory:
 		s.WriteString(m.table.View())
@@ -376,7 +419,6 @@ func (m model) View() string {
 			}
 			s.WriteString(fmt.Sprintf("%s%s\n", cursor, name))
 		}
-		// Option to create new
 		cursor := "  "
 		text := "+ Create New Profile"
 		if m.cursor == len(m.data.Profiles) {
@@ -410,8 +452,6 @@ func getForecasting(p Profile) string {
 	if len(p.History) < 3 {
 		return infoStyle.Render("ℹ️  Forecast: Need at least 3 entries to project revenue.")
 	}
-
-	// Simple Moving Average of last 3 entries
 	start := len(p.History) - 3
 	sumProfit := 0.0
 	for i := start; i < len(p.History); i++ {
@@ -428,45 +468,32 @@ func getForecasting(p Profile) string {
 
 func createTable(p Profile) table.Model {
 	columns := []table.Column{
-		{Title: "Date", Width: 12},
+		{Title: "Date", Width: 16},
 		{Title: "Revenue", Width: 10},
 		{Title: "Profit", Width: 10},
 		{Title: "Margin", Width: 8},
 	}
-
 	rows := []table.Row{}
 	for _, item := range p.History {
 		rows = append(rows, table.Row{
-			item.Timestamp.Format("2006-01-02"),
+			item.Timestamp.Format("2006-01-02 15:04"),
 			fmt.Sprintf("%.2f", item.Revenue),
 			fmt.Sprintf("%.2f", item.Profit),
 			fmt.Sprintf("%.0f%%", item.NetProfitMargin*100),
 		})
 	}
-
 	t := table.New(
 		table.WithColumns(columns),
 		table.WithRows(rows),
 		table.WithFocused(true),
 		table.WithHeight(7),
 	)
-
 	s := table.DefaultStyles()
-	s.Header = s.Header.
-		BorderStyle(lipgloss.NormalBorder()).
-		BorderForeground(lipgloss.Color("240")).
-		BorderBottom(true).
-		Bold(false)
-	s.Selected = s.Selected.
-		Foreground(lipgloss.Color("229")).
-		Background(lipgloss.Color("57")).
-		Bold(false)
+	s.Header = s.Header.BorderStyle(lipgloss.NormalBorder()).BorderForeground(lipgloss.Color("240")).BorderBottom(true).Bold(false)
+	s.Selected = s.Selected.Foreground(lipgloss.Color("229")).Background(lipgloss.Color("57")).Bold(false)
 	t.SetStyles(s)
-
 	return t
 }
-
-// --- Persistence ---
 
 func saveData(data AppData) {
 	file, _ := json.MarshalIndent(data, "", "  ")

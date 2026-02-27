@@ -1,0 +1,38 @@
+{
+  "profiles": [
+    {
+      "name": "Default",
+      "currency": "₹",
+      "history": []
+    },
+    {
+      "name": "Cyth",
+      "currency": "₹",
+      "history": [
+        {
+          "timestamp": "2026-02-12T12:46:16.084622259+05:30",
+          "revenue": 23000,
+          "expenses": 13000,
+          "tax_rate": 18,
+          "ebt": 10000,
+          "profit": 8200,
+          "tax_retention_rate": 0.82,
+          "pretax_margin": 0.43478260869565216,
+          "net_profit_margin": 0.3565217391304348
+        },
+        {
+          "timestamp": "2026-02-12T12:50:32.004750571+05:30",
+          "revenue": 34000,
+          "expenses": 23000,
+          "tax_rate": 13,
+          "ebt": 11000,
+          "profit": 9570,
+          "tax_retention_rate": 0.87,
+          "pretax_margin": 0.3235294117647059,
+          "net_profit_margin": 0.28147058823529414
+        }
+      ]
+    }
+  ],
+  "current_profile": 1
+}

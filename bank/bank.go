@@ -9,30 +9,30 @@ import (
 
 const accountBalanceFile = "balance.txt"
 
-func getBalanceFromFile() (float64, error) {
-	data, err := os.ReadFile(accountBalanceFile)
+func getFloatFromFile(fileName string) (float64, error) {
+	data, err := os.ReadFile(fileName)
 
 	if err != nil {
-		return 1000, errors.New("Failed to find balance file.")
+		return 1000, errors.New("Failed to find file.")
 	}
 
-	balanceText := string(data)
-	balance, err := strconv.ParseFloat(balanceText, 64)
+	valueText := string(data)
+	value, err := strconv.ParseFloat(valueText, 64)
 
 	if err != nil {
 		return 1000, errors.New("Failed to parse stored balance value.")
 	}
 
-	return balance, nil
+	return value, nil
 }
 
-func writeBalanceToFile(balance float64) {
-	balanceText := fmt.Sprint(balance)
-	os.WriteFile(accountBalanceFile, []byte(balanceText), 0644)
+func writeFloatToFile(value float64, fileName string) {
+	valueText := fmt.Sprint(value)
+	os.WriteFile(fileName, []byte(valueText), 0644)
 }
 
 func main() {
-	var accountBalance, err = getBalanceFromFile()
+	var accountBalance, err = getFloatFromFile(accountBalanceFile)
 
 	if err != nil {
 		fmt.Println("ERROR")
@@ -57,7 +57,7 @@ func main() {
 		// wantsCheckBalance := choice == 1
 		switch choice {
 		case 1:
-			writeBalanceToFile(accountBalance)
+			writeFloatToFile(accountBalance, accountBalanceFile)
 			fmt.Printf("Your balance is: %.2f\n", accountBalance)
 
 		case 2:
@@ -72,7 +72,7 @@ func main() {
 
 			accountBalance += depositAmount
 			fmt.Printf("Your balance updated!\nCurrent Balance: %.2f\n", accountBalance)
-			writeBalanceToFile(accountBalance)
+			writeFloatToFile(accountBalance, accountBalanceFile)
 		case 3:
 			fmt.Print("Enter the Withdrawal Amount: ")
 			var withdrawAmount float64
@@ -90,7 +90,7 @@ func main() {
 
 			accountBalance -= withdrawAmount
 			fmt.Printf("Your balance updated!\nCurrent Balance: %.2f\n", accountBalance)
-			writeBalanceToFile(accountBalance)
+			writeFloatToFile(accountBalance, accountBalanceFile)
 		default:
 			fmt.Println("Thank you for choosing our bank!\nGoodbye!!")
 			return
